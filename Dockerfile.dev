@@ -1,0 +1,15 @@
+FROM golang:1.18.3-alpine
+
+WORKDIR /app
+EXPOSE 8080
+
+RUN apk update && apk add git
+RUN go install -mod=mod github.com/githubnemo/CompileDaemon
+
+COPY ./go.mod .
+COPY ./go.sum .
+RUN go mod download && go mod verify
+
+COPY . .
+
+ENTRYPOINT CompileDaemon --build="go build -o /out/app main.go" --command="/out/app"

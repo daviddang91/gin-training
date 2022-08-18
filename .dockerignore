@@ -1,0 +1,7 @@
+swag
+vendor
+**/**/*_test.go
+**/**/**/*_test.go
+**/node_modules
+.git
+tmp
