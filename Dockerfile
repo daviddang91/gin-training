@@ -1,7 +1,7 @@
 FROM golang:1.18.3-alpine as builder
 
 ENV GIN_MODE=release
-ENV PORT=8080
+ENV APP_PORT=3000
 
 WORKDIR /app
 COPY . .
@@ -16,7 +16,7 @@ RUN apk update && rm /var/cache/apk/*
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /app
-EXPOSE 8080
+EXPOSE 3000
 
 COPY --from=builder /out/app ./
 CMD ["./app"]

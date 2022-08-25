@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,8 +12,9 @@ var (
 
 // Run will start the server
 func Run() {
+	serverAddress := os.Getenv("SERVER_ADDRESS")
 	getRoutes()
-	router.Run(":8080")
+	router.Run(serverAddress)
 }
 
 // getRoutes will create our routes of our entire application
