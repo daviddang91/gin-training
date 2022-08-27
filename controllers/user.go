@@ -1,42 +1,135 @@
 package controllers
 
 import (
-	"gin-training/database"
+	"errors"
+	"gin-training/forms/requests"
+	"gin-training/forms/responses"
 	"gin-training/models"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 func GetUsersController(c *gin.Context) {
-	users := []models.User{}
-	database.DB.Find(&users)
+	var userModel models.User
+	users, err := userModel.FindAll()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
+		return
+	}
+
 	c.JSON(200, &users)
 }
 
 func DetailUserController(c *gin.Context) {
-	var user models.User
-	database.DB.Where("id = ?", c.Param("id")).First(&user)
-	c.BindJSON(&user)
-	c.JSON(200, &user)
+	userId := c.Param("id")
+	var userModel models.User
+	user, err := userModel.FindById(userId)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusNotFound),
+			"message": err.Error(),
+		})
+		return
+	}
+
+	result := user.Response()
+	c.JSON(200, &result)
 }
 
 func CreateUserController(c *gin.Context) {
-	var user models.User
-	c.BindJSON(&user)
-	database.DB.Create(&user)
-	c.JSON(200, &user)
+	req := requests.UserRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			out := make([]responses.ErrorMsg, len(ve))
+			for i, fe := range ve {
+				out[i] = responses.ErrorMsg{Field: fe.Field(), Message: fe.Error()}
+			}
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"errors": out})
+		}
+		return
+	}
+
+	var userModel models.User
+	userObj := userModel.Request(req)
+	user, err := userModel.Create(userObj)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
+		return
+	}
+
+	result := user.Response()
+	c.JSON(201, &result)
 }
 
 func UpdateUserController(c *gin.Context) {
-	var user models.User
-	database.DB.Where("id = ?", c.Param("id")).First(&user)
-	c.BindJSON(&user)
-	database.DB.Save(&user)
+	req := requests.UserRequest{}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			out := make([]responses.ErrorMsg, len(ve))
+			for i, fe := range ve {
+				out[i] = responses.ErrorMsg{Field: fe.Field(), Message: fe.Error()}
+			}
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"errors": out})
+		}
+		return
+	}
+
+	userId := c.Param("id")
+	var userModel models.User
+	userObj, errObj := userModel.FindById(userId)
+	if errObj != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusNotFound),
+			"message": errObj.Error(),
+		})
+		return
+	}
+
+	userReq := userObj.Request(req)
+	user, err := userModel.Update(userReq)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
+		return
+	}
+
 	c.JSON(200, &user)
 }
 
 func DeleteUserController(c *gin.Context) {
-	var user models.User
-	database.DB.Where("id = ?", c.Param("id")).Delete(&user)
-	c.JSON(200, &user)
+	userId := c.Param("id")
+	var userModel models.User
+
+	user, errVal := userModel.FindById(userId)
+	if errVal != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusNotFound),
+			"message": errVal.Error(),
+		})
+		return
+	}
+
+	_, errDel := userModel.Delete(user)
+	if errDel != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": errDel.Error(),
+		})
+		return
+	}
+
+	c.Status(204)
 }
