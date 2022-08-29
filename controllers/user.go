@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"errors"
-	"gin-training/forms/requests"
-	"gin-training/forms/responses"
 	"gin-training/models"
+	"gin-training/serializers/requests"
+	"gin-training/serializers/responses"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

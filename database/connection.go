@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var Instance *gorm.DB
 
 type DBConnection struct {
 	Host     string
@@ -50,5 +50,5 @@ func ConnectDB() {
 	if err != nil {
 		panic(err)
 	}
-	DB = db
+	Instance = db
 }
