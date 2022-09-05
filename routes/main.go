@@ -26,7 +26,6 @@ func getRoutes() {
 
 	v1 := router.Group("/v1")
 	UserRoutes(v1)
-	//PingRoutes(v1)
 
 	// v2 := router.Group("/v2")
 	// PingRoutes(v2)

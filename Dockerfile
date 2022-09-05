@@ -1,4 +1,4 @@
-FROM golang:1.18.3-alpine as builder
+FROM golang:1.19.0-alpine as builder
 
 ENV GIN_MODE=release
 ENV APP_PORT=3000

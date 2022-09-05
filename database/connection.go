@@ -44,11 +44,19 @@ func (c DBConnection) ToConnectionString() string {
 	)
 }
 
-func ConnectDB() {
+func SetupDatabaseConnection() {
 	dsn := NewDBConnection().ToConnectionString()
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
 	Instance = db
+}
+
+func CloseDatabaseConnection() {
+	db, err := Instance.DB()
+	if err != nil {
+		panic(err)
+	}
+	db.Close()
 }

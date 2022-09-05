@@ -1,4 +1,9 @@
-package migrations
+package main
+
+/*
+Purpose: Auto migrate models to database
+Command: go run database/migrations/migrate.go
+*/
 
 import (
 	"gin-training/database"
@@ -6,10 +11,18 @@ import (
 )
 
 func init() {
+	// Load environment variables
 	database.LoadEnvVariables()
-	database.ConnectDB()
+	// Open database connection
+	database.SetupDatabaseConnection()
 }
 
 func main() {
-	database.Instance.AutoMigrate(&models.User{})
+	// Close database connection after application is closed
+	defer database.CloseDatabaseConnection()
+
+	// Auto migrate models to database
+	database.Instance.AutoMigrate(
+		&models.User{},
+	)
 }

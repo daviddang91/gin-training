@@ -7,6 +7,6 @@ import (
 )
 
 func AuthRoutes(auth *gin.RouterGroup) {
-	auth.POST("/signup", controllers.RegisterUser)
-	auth.POST("/login", controllers.GenerateToken)
+	auth.POST("/register", controllers.Register)
+	auth.POST("/login", controllers.Login)
 }

@@ -6,10 +6,15 @@ import (
 )
 
 func init() {
+	// Load environment variables
 	database.LoadEnvVariables()
-	database.ConnectDB()
+	// Open database connection
+	database.SetupDatabaseConnection()
 }
 
 func main() {
+	// Close database connection after application is closed
+	defer database.CloseDatabaseConnection()
+	// Start application
 	routes.Run()
 }
