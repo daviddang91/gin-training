@@ -83,8 +83,18 @@ func CreateUser(ctx *gin.Context) {
 }
 
 func UpdateUser(ctx *gin.Context) {
-	req := requests.UpdateUserRequest{}
+	userId := ctx.Param("id")
+	var user models.User
 
+	// Find user
+	if err := database.Instance.Model(&models.User{}).First(&user, userId).Error; err != nil {
+		response := helpers.BuildErrorResponse("Failed to update user", "User not found")
+		ctx.AbortWithStatusJSON(http.StatusNotFound, response)
+		return
+	}
+
+	// Bind data from json to user object
+	req := requests.UpdateUserRequest{}
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		var ve validator.ValidationErrors
 		if errors.As(err, &ve) {
@@ -98,38 +108,35 @@ func UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	// userId := ctx.Param("id")
-	// user := req.BindRequest()
+	// Update user
+	user = req.BindRequest(&user)
+	if err := database.Instance.Model(&models.User{}).Where("id = ?", user.ID).Updates(&user).Error; err != nil {
+		response := helpers.BuildErrorResponse("Failed to update user", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
 
-	// if err := database.Instance.Model(&models.User{}).Where("id = ?", userId).Updates(&user).Error; err != nil {
-	// 	response := helpers.BuildErrorResponse("Failed to update user", err.Error())
-	// 	ctx.AbortWithStatusJSON(http.StatusNotFound, response)
-	// 	return
-	// }
-
-	// response := helpers.BuildDetailResponse(user.BindResponse())
-	// ctx.JSON(200, &response)
-
-	//ctx.JSON(200)
+	response := helpers.BuildDetailResponse(user.BindResponse())
+	ctx.JSON(200, &response)
 }
 
-// func DeleteUserController(ctx *gin.Context) {
-// 	userId := ctx.Param("id")
-// 	var userModel models.User
+func DeleteUser(ctx *gin.Context) {
+	userId := ctx.Param("id")
+	var user models.User
 
-// 	user, errVal := userModel.FindById(userId)
-// 	if errVal != nil {
-// 		response := helpers.BuildErrorResponse("Failed to process request", errVal.Error())
-// 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
-// 		return
-// 	}
+	// Find user
+	if err := database.Instance.Model(&models.User{}).First(&user, userId).Error; err != nil {
+		response := helpers.BuildErrorResponse("Failed to delete user", "User not found")
+		ctx.AbortWithStatusJSON(http.StatusNotFound, response)
+		return
+	}
 
-// 	_, errDel := userModel.Delete(user)
-// 	if errDel != nil {
-// 		response := helpers.BuildErrorResponse("Failed to process request", errDel.Error())
-// 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
-// 		return
-// 	}
+	// Delete user
+	if err := database.Instance.Model(&models.User{}).Delete(&user).Error; err != nil {
+		response := helpers.BuildErrorResponse("Failed to delete user", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
 
-// 	ctx.Status(204)
-// }
+	ctx.Status(204)
+}

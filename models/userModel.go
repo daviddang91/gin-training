@@ -58,32 +58,3 @@ func (user *User) BindAuthResponse(token string) responses.AuthResponse {
 	}
 	return result
 }
-
-// func (userModel *User) FindAll() ([]responses.UserResponse, error) {
-// 	var users []responses.UserResponse
-// 	result := database.Instance.Model(&User{}).Find(&users)
-// 	return users, result.Error
-// }
-
-// func (userModel *User) FindById(userId string) (User, error) {
-// 	var user User
-// 	result := database.Instance.Model(&User{}).First(&user, userId)
-// 	return user, result.Error
-// }
-
-// func (userModel *User) Create(userObj User) (User, error) {
-// 	user := userObj
-// 	result := database.Instance.Model(&user).Create(&user)
-// 	return user, result.Error
-// }
-
-// func (userModel *User) Update(userObj User) (User, error) {
-// 	user := userObj
-// 	result := database.Instance.Model(&user).Where("id = ?", user.ID).Updates(&user)
-// 	return user, result.Error
-// }
-
-// func (userModel *User) Delete(userObj User) (int64, error) {
-// 	result := database.Instance.Delete(&userObj, userObj.ID)
-// 	return result.RowsAffected, result.Error
-// }
