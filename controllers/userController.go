@@ -15,15 +15,19 @@ import (
 )
 
 func ListUser(ctx *gin.Context) {
+	var model models.User
 	var users []responses.UserResponse
 
-	if err := database.Instance.Model(&models.User{}).Find(&users).Error; err != nil {
+	p := helpers.GeneratePagination(ctx, model)
+	pagination, err := helpers.Paginator(&p, &users)
+
+	if err != nil {
 		response := helpers.BuildErrorResponse("Failed to get list of users", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 
-	response := helpers.BuildListResponse(users, helpers.EmptyObj{})
+	response := helpers.BuildListResponse(&users, &pagination)
 	ctx.JSON(200, &response)
 }
 
